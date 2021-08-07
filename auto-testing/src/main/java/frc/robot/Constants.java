@@ -13,7 +13,7 @@ package frc.robot;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-    public static final class Drivetrain {
+    public static final class kDrivetrain {
         // drive motor ids
         public static final int fR_ID = 0;
         public static final int fL_ID = 1;
@@ -46,5 +46,29 @@ public final class Constants {
 		public static final double wheelRadius = 3.0;
 		public static final double trackWidth = 0.6420;
 
+        public static final int CURRENT_LIMIT = 35;
+    }
+
+    public static final class kRamsete {
+        // ramsete controller constants
+        public static final double B = 2;
+        public static final double ZETA = 0.7;
+
+        // pid controller constants
+        public static final double LEFT_kP = 0;
+        public static final double LEFT_kI = 0;
+        public static final double LEFT_kD = 0;
+        public static final double RIGHT_kP = 0;
+        public static final double RIGHT_kI = 0;
+        public static final double RIGHT_kD = 0;
+
+        // kS (volts), kV (volts * sec/meter), kA (volts * sec^2/m)
+        public static final double kS = 0;
+        public static final double kV = 0;
+        public static final double kA = 0;
+
+        public static final double MAX_METERS_PER_SECOND = 4.66667;
+        public static final double MAX_ACCEL_METERS_PER_SECOND_SQUARED = 420.6969;
+        public static final double MAX_VOLTAGE = 40;
     }
 }
