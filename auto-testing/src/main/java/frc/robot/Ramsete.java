@@ -72,7 +72,9 @@ public class Ramsete {
         return new RamseteCommand(
             path.getTrajectory(),
             drive::getPose,
-            new RamseteController(Constants.kRamsete.B, Constants.kRamsete.ZETA),
+            new RamseteController(
+                Constants.kRamsete.B,
+                Constants.kRamsete.ZETA),
             ramseteFF,
             drive.getKinematics(),
             drive::getWheelSpeeds,

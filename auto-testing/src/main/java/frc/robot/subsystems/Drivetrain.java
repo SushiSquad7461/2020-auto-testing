@@ -140,6 +140,10 @@ public class Drivetrain extends SubsystemBase {
     driveOdometry.resetPosition(getPose(), getAngle());
   }
 
+  public void updateOdometry() {
+    driveOdometry.update(getAngle(), leftEncoder.getPosition(), leftEncoder.getPosition());
+  }
+
   public Pose2d getPose() {
     return driveOdometry.getPoseMeters();
   }
