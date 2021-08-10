@@ -33,8 +33,8 @@ public class Ramsete {
     
     // path enums
     public enum Paths {
-        FORWARD("Pathweaver/Paths/forward.json"),
-        CIRCLE("Pathweaver/Paths/circle.json");
+        FORWARD("Pathweaver/output/forward.wpilib.json"),
+        CIRCLE("Pathweaver/output/circle.wpilib.json");
         private String json;
         Paths(String json) {
             this.json = json;

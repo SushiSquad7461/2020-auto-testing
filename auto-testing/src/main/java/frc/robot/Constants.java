@@ -47,6 +47,8 @@ public final class Constants {
 		public static final double trackWidth = 0.6420;
 
         public static final int CURRENT_LIMIT = 35;
+
+        // public static final int 
     }
 
     public static final class kRamsete {

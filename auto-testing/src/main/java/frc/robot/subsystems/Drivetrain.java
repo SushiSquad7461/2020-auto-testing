@@ -5,12 +5,18 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpiutil.math.VecBuilder;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.kauailabs.navx.frc.AHRS;
+
+import edu.wpi.first.hal.SimDevice;
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -21,7 +27,13 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
+import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -35,6 +47,16 @@ public class Drivetrain extends SubsystemBase {
   private SimpleMotorFeedforward leftFeedForward, rightFeedForward;
   private PIDController leftController, rightController;
   private CANEncoder leftEncoder, rightEncoder;
+  private Encoder simEncoderLeft;
+  private Encoder simEncoderRight;
+
+  // sim
+  public DifferentialDrivetrainSim driveSim;
+  private EncoderSim leftEncoderSim;
+  private EncoderSim rightEncoderSim;
+  private Field2d fieldSim;
+  private SimDevice gyroSim;
+
   
   /** Creates a new drivetrain. */
   public Drivetrain() {
@@ -93,7 +115,30 @@ public class Drivetrain extends SubsystemBase {
 		frontLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
-		backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+    backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+
+    simEncoderLeft = new Encoder(0, 1);
+    simEncoderRight = new Encoder(3,4);
+
+    simEncoderLeft.setDistancePerPulse(Math.PI/7);
+    simEncoderRight.setDistancePerPulse(Math.PI/7);
+    
+    // instantiate simulation objects
+    driveSim = new DifferentialDrivetrainSim(
+      DCMotor.getNEO(2),
+      7.29,                      // gear reduction
+      7,                         // moment of inertia of robot
+      100,                       // weight of robot (kg)
+      Units.inchesToMeters(3),   // radius of wheels
+      0.59,                      // track width (m)
+      null                       // standard deviations of encoders
+    );
+    leftEncoderSim = new EncoderSim(simEncoderLeft);
+    rightEncoderSim = new EncoderSim(simEncoderRight);
+    fieldSim = new Field2d();
+    gyroSim = new SimDevice(SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]"));
+    SmartDashboard.putData("Field", fieldSim);
+
 
   }
 
@@ -101,6 +146,11 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    driveOdometry.update(
+      nav.getRotation2d(),
+      leftEncoder.getPosition(),
+      rightEncoder.getPosition());
+    fieldSim.setRobotPose(getPose());
   }
 
   public void closedCurveDrive(double linearVelocity, double angularVelocity, boolean isQuickTurn) {
@@ -144,7 +194,7 @@ public class Drivetrain extends SubsystemBase {
     driveOdometry.update(getAngle(), leftEncoder.getPosition(), leftEncoder.getPosition());
   }
 
-  public Pose2d getPose() {
+  public Pose2d getPose() {  
     return driveOdometry.getPoseMeters();
   }
 
@@ -164,5 +214,22 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
+
+    // set the imputs of the sim
+    driveSim.setInputs(
+      frontLeft.get() * frontLeft.getBusVoltage(),
+      frontRight.get() * frontRight.getBusVoltage());
+
+    // rate of updating the sim (s)
+    driveSim.update(0.02);
+
+    // update sensors
+    leftEncoderSim.setDistance(driveSim.getLeftPositionMeters());
+    leftEncoderSim.setRate(driveSim.getLeftVelocityMetersPerSecond());
+    rightEncoderSim.setDistance(driveSim.getRightPositionMeters());
+    rightEncoderSim.setDistance(driveSim.getRightVelocityMetersPerSecond());
+    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+    SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+    angle.set(5.0);
   }
 }
