@@ -116,6 +116,8 @@ public class Drivetrain extends SubsystemBase {
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
     backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 
+    resetOdometry();
+
     simEncoderLeft = new Encoder(0, 1);
     simEncoderRight = new Encoder(3,4);
 
