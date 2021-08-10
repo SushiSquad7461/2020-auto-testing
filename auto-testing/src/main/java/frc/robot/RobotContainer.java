@@ -6,11 +6,14 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 
 /**
@@ -27,6 +30,7 @@ public class RobotContainer {
   private final Drivetrain s_drive;
   private final Ramsete ramsete;
   private final AutoCommandSelector autoSelector;
+  private Field2d fieldSim;
 
   private SendableChooser<SequentialCommandGroup> autoChooser = new SendableChooser<>();
 
@@ -43,6 +47,14 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
+    
+    fieldSim = new Field2d();
+    SmartDashboard.putData("Field", fieldSim);
+    fieldSim.getObject("forward traj").setTrajectory(Ramsete.Paths.CIRCLE.getTrajectory());
+  }
+
+  public void updateField() {
+    fieldSim.setRobotPose(s_drive.getOdometry().getPoseMeters());
   }
 
   /**
@@ -60,6 +72,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return autoSelector.test;
+    return autoSelector.circle;
   }
 }

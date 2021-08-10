@@ -54,7 +54,6 @@ public class Drivetrain extends SubsystemBase {
   public DifferentialDrivetrainSim driveSim;
   private EncoderSim leftEncoderSim;
   private EncoderSim rightEncoderSim;
-  private Field2d fieldSim;
   private SimDevice gyroSim;
 
   
@@ -135,22 +134,14 @@ public class Drivetrain extends SubsystemBase {
     );
     leftEncoderSim = new EncoderSim(simEncoderLeft);
     rightEncoderSim = new EncoderSim(simEncoderRight);
-    fieldSim = new Field2d();
     gyroSim = new SimDevice(SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]"));
-    SmartDashboard.putData("Field", fieldSim);
-
-
   }
 
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    driveOdometry.update(
-      nav.getRotation2d(),
-      leftEncoder.getPosition(),
-      rightEncoder.getPosition());
-    fieldSim.setRobotPose(getPose());
+    updateOdometry();
   }
 
   public void closedCurveDrive(double linearVelocity, double angularVelocity, boolean isQuickTurn) {
@@ -176,6 +167,8 @@ public class Drivetrain extends SubsystemBase {
 
     frontLeft.setVoltage(leftOutput + leftFeedForwardOutput);
     frontRight.setVoltage(rightOutput + rightFeedForwardOutput);
+    //frontLeft.setVoltage(5);
+    //frontRight.setVoltage(6);
   }
 
   public Rotation2d getAngle() {
@@ -191,7 +184,12 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void updateOdometry() {
-    driveOdometry.update(getAngle(), leftEncoder.getPosition(), leftEncoder.getPosition());
+    //driveOdometry.update(getAngle(), leftEncoder.getPosition(), rightEncoder.getPosition());
+    driveOdometry.update(getAngle(), leftEncoderSim.getDistance(), rightEncoderSim.getDistance());
+  }
+
+  public DifferentialDriveOdometry getOdometry() {
+    return driveOdometry;
   }
 
   public Pose2d getPose() {  
@@ -217,8 +215,8 @@ public class Drivetrain extends SubsystemBase {
 
     // set the imputs of the sim
     driveSim.setInputs(
-      frontLeft.get() * frontLeft.getBusVoltage(),
-      frontRight.get() * frontRight.getBusVoltage());
+      /*frontLeft.get() **/ frontLeft.getBusVoltage(),
+      /*frontRight.get() **/ frontRight.getBusVoltage());
 
     // rate of updating the sim (s)
     driveSim.update(0.02);

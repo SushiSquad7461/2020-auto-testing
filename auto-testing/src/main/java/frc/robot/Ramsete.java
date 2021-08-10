@@ -33,8 +33,8 @@ public class Ramsete {
     
     // path enums
     public enum Paths {
-        FORWARD("Pathweaver/output/forward.wpilib.json"),
-        CIRCLE("Pathweaver/output/circle.wpilib.json");
+        FORWARD("output/forward.wpilib.json"),
+        CIRCLE("output/circle.wpilib.json");
         private String json;
         Paths(String json) {
             this.json = json;
@@ -42,9 +42,10 @@ public class Ramsete {
 
         public Trajectory getTrajectory() {
             try {
+                System.out.println(Filesystem.getDeployDirectory().toPath().resolve(json));
                 Path trajectoryPath = Filesystem.getDeployDirectory().toPath().resolve(json);
                 return TrajectoryUtil.fromPathweaverJson(trajectoryPath);
-            } catch (IOException ex) { 
+            } catch (IOException ex) {
                 return null; 
             }
         }

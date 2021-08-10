@@ -57,17 +57,17 @@ public final class Constants {
         public static final double ZETA = 0.7;
 
         // pid controller constants
-        public static final double LEFT_kP = 0;
+        public static final double LEFT_kP = 0.356;
         public static final double LEFT_kI = 0;
         public static final double LEFT_kD = 0;
-        public static final double RIGHT_kP = 0;
+        public static final double RIGHT_kP = 0.356;
         public static final double RIGHT_kI = 0;
         public static final double RIGHT_kD = 0;
 
         // kS (volts), kV (volts * sec/meter), kA (volts * sec^2/m)
-        public static final double kS = 0;
-        public static final double kV = 0;
-        public static final double kA = 0;
+        public static final double kS = 0.166;
+        public static final double kV = 0.0315;
+        public static final double kA = 0.00743;
 
         public static final double MAX_METERS_PER_SECOND = 4.66667;
         public static final double MAX_ACCEL_METERS_PER_SECOND_SQUARED = 420.6969;
