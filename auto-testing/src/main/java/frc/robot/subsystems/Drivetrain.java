@@ -76,7 +76,7 @@ public class Drivetrain extends SubsystemBase {
     // create the differential drive
     diffDrive = new DifferentialDrive(frontLeft, frontRight);
     driveKinematics = new DifferentialDriveKinematics(Constants.kDrivetrain.trackWidth);
-    driveOdometry = new DifferentialDriveOdometry(getAngle());
+    driveOdometry = new DifferentialDriveOdometry(getAngle(), new Pose2d(1, 6, getAngle()));
 
     // create feedforward and pid controllers
     leftFeedForward = new SimpleMotorFeedforward(
@@ -116,13 +116,13 @@ public class Drivetrain extends SubsystemBase {
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
     backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 
-    resetOdometry();
-
     simEncoderLeft = new Encoder(0, 1);
     simEncoderRight = new Encoder(3,4);
 
     simEncoderLeft.setDistancePerPulse(Math.PI/7);
     simEncoderRight.setDistancePerPulse(Math.PI/7);
+    
+    resetOdometry();
     
     // instantiate simulation objects
     driveSim = new DifferentialDrivetrainSim(
@@ -181,13 +181,19 @@ public class Drivetrain extends SubsystemBase {
     nav.reset();
   }
 
+  public void resetEncoders() {
+    simEncoderRight.reset();
+    simEncoderLeft.reset();
+  }
+
   public void resetOdometry() {
     driveOdometry.resetPosition(getPose(), getAngle());
+    //resetEncoders();
   }
 
   public void updateOdometry() {
     //driveOdometry.update(getAngle(), leftEncoder.getPosition(), rightEncoder.getPosition());
-    driveOdometry.update(getAngle(), leftEncoderSim.getDistance(), rightEncoderSim.getDistance());
+    driveOdometry.update(getAngle(), simEncoderLeft.getDistance(), simEncoderRight.getDistance());
   }
 
   public DifferentialDriveOdometry getOdometry() {
@@ -203,8 +209,10 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    frontLeft.setVoltage(leftVolts);
-    frontRight.setVoltage(rightVolts);
+    //frontLeft.setVoltage(leftVolts);
+    //frontRight.setVoltage(rightVolts);
+    frontLeft.setVoltage(5);
+    frontRight.setVoltage(7);
   }
 
   public DifferentialDriveKinematics getKinematics() {
@@ -230,6 +238,6 @@ public class Drivetrain extends SubsystemBase {
     rightEncoderSim.setDistance(driveSim.getRightVelocityMetersPerSecond());
     int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
     SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
-    angle.set(5.0);
+    angle.set(nav.getAngle());
   }
 }

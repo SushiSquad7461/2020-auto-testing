@@ -45,16 +45,18 @@ public class RobotContainer {
     autoChooser.addOption("forward", autoSelector.forward);
     autoChooser.addOption("circle", autoSelector.circle);
 
+    SmartDashboard.putString("pose", s_drive.getPose().toString());
+
     // Configure the button bindings
     configureButtonBindings();
     
     fieldSim = new Field2d();
     SmartDashboard.putData("Field", fieldSim);
-    fieldSim.getObject("forward traj").setTrajectory(Ramsete.Paths.CIRCLE.getTrajectory());
+    fieldSim.getObject("forward traj").setTrajectory(Ramsete.Paths.FORWARD.getTrajectory());
   }
 
   public void updateField() {
-    fieldSim.setRobotPose(s_drive.getOdometry().getPoseMeters());
+    fieldSim.setRobotPose(s_drive.getPose());
   }
 
   /**
