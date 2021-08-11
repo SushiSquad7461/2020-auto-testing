@@ -69,7 +69,7 @@ public class Ramsete {
             Constants.kRamsete.MAX_VOLTAGE);
     }
 
-    public RamseteCommand createRamseteCommand(Paths path) {
+    public SequentialCommandGroup createRamseteCommand(Paths path) {
         return new RamseteCommand(
             path.getTrajectory(),
             drive::getPose,
@@ -88,7 +88,8 @@ public class Ramsete {
                 Constants.kRamsete.RIGHT_kI,
                 Constants.kRamsete.RIGHT_kD),
             drive::tankDriveVolts,
-            drive);
+            drive)
+            .andThen(() -> drive.tankDriveVolts(0, 0));
     }
 
     public DifferentialDriveVoltageConstraint getVoltageConstraint() {
