@@ -74,8 +74,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    System.out.println("awooooooooooooooooooooooooooooooo");
-    System.out.println(autoSelector.forward);
     return autoSelector.forward;
   }
 }

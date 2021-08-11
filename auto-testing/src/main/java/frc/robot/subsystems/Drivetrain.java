@@ -17,6 +17,8 @@ import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PWMSparkMax;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -38,7 +40,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class Drivetrain extends SubsystemBase {
-  private CANSparkMax frontLeft, frontRight, backLeft, backRight;
+  //private CANSparkMax frontLeft, frontRight, backLeft, backRight;
+  private PWMSparkMax frontLeft, frontRight;
   private DifferentialDrive diffDrive;
   private boolean driveInverted;
   private DifferentialDriveKinematics driveKinematics;
@@ -60,23 +63,25 @@ public class Drivetrain extends SubsystemBase {
   /** Creates a new drivetrain. */
   public Drivetrain() {
     // motor instantiation
-    frontLeft = new CANSparkMax(Constants.kDrivetrain.fL_ID, MotorType.kBrushless);
-    frontRight = new CANSparkMax(Constants.kDrivetrain.fR_ID, MotorType.kBrushless);
-    backLeft = new CANSparkMax(Constants.kDrivetrain.bL_ID, MotorType.kBrushless);
-    backRight = new CANSparkMax(Constants.kDrivetrain.bR_ID, MotorType.kBrushless);
+    frontLeft = new PWMSparkMax(Constants.kDrivetrain.fL_ID);
+    frontRight = new PWMSparkMax(Constants.kDrivetrain.fR_ID);
+    //frontLeft = new CANSparkMax(Constants.kDrivetrain.fL_ID, MotorType.kBrushless);
+    //frontRight = new CANSparkMax(Constants.kDrivetrain.fR_ID, MotorType.kBrushless);
+    //backLeft = new CANSparkMax(Constants.kDrivetrain.bL_ID, MotorType.kBrushless);
+    //backRight = new CANSparkMax(Constants.kDrivetrain.bR_ID, MotorType.kBrushless);
 
     // instantiate navX
     nav = new AHRS(SPI.Port.kMXP);
     nav.reset();
 
     // instantiate encoders
-    leftEncoder = frontLeft.getEncoder();
-    rightEncoder = frontRight.getEncoder();
+    //leftEncoder = frontLeft.getEncoder();
+    //rightEncoder = frontRight.getEncoder();
     
     // create the differential drive
     diffDrive = new DifferentialDrive(frontLeft, frontRight);
     driveKinematics = new DifferentialDriveKinematics(Constants.kDrivetrain.trackWidth);
-    driveOdometry = new DifferentialDriveOdometry(getAngle(), new Pose2d(1, 6, getAngle()));
+    driveOdometry = new DifferentialDriveOdometry(getAngle(), new Pose2d(1, 5, getAngle()));
 
     // create feedforward and pid controllers
     leftFeedForward = new SimpleMotorFeedforward(
@@ -96,14 +101,14 @@ public class Drivetrain extends SubsystemBase {
       Constants.kDrivetrain.RIGHT_kD);
 
     // configure motor controllers
-		backLeft.follow(frontLeft);
-		backRight.follow(frontRight);
+		//backLeft.follow(frontLeft);
+		//backRight.follow(frontRight);
 
 		// open loop inversion configuration
 		frontLeft.setInverted(driveInverted);
 		frontRight.setInverted(driveInverted);
-		backLeft.setInverted(driveInverted);
-		backRight.setInverted(driveInverted);
+		//backLeft.setInverted(driveInverted);
+		//backRight.setInverted(driveInverted);
 
 		// closed loop inversion configuration
 		/*frontLeft.setInverted(driveInverted);
@@ -111,10 +116,10 @@ public class Drivetrain extends SubsystemBase {
 		backLeft.setInverted(driveInverted);
 		backRight.setInverted(!driveInverted);*/
 
-		frontLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
-		frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
-		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
-    backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+		//frontLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+		//frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+		//backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+    //backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 
     simEncoderLeft = new Encoder(0, 1);
     simEncoderRight = new Encoder(3,4);
@@ -164,8 +169,10 @@ public class Drivetrain extends SubsystemBase {
     leftFeedForwardOutput = leftFeedForward.calculate(wheelSpeeds.leftMetersPerSecond);
     rightFeedForwardOutput = rightFeedForward.calculate(wheelSpeeds.rightMetersPerSecond);
 
-    leftOutput = leftController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
-    rightOutput = rightController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
+    //leftOutput = leftController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
+    //rightOutput = rightController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
+    leftOutput = leftController.calculate(simEncoderLeft.getRate(), wheelSpeeds.leftMetersPerSecond);
+    rightOutput = rightController.calculate(simEncoderRight.getRate(), wheelSpeeds.rightMetersPerSecond);
 
     frontLeft.setVoltage(leftOutput + leftFeedForwardOutput);
     frontRight.setVoltage(rightOutput + rightFeedForwardOutput);
@@ -175,6 +182,14 @@ public class Drivetrain extends SubsystemBase {
 
   public Rotation2d getAngle() {
     return Rotation2d.fromDegrees(nav.getAngle());
+  }
+
+  public double getHeading() {
+    double heading = -nav.getYaw();
+    if (heading > 180 || heading < 180) {
+      heading = Math.IEEEremainder(heading, 360);
+    }
+    return heading;
   }
 
   public void zeroAngle() {
@@ -193,7 +208,7 @@ public class Drivetrain extends SubsystemBase {
 
   public void updateOdometry() {
     //driveOdometry.update(getAngle(), leftEncoder.getPosition(), rightEncoder.getPosition());
-    driveOdometry.update(getAngle(), simEncoderLeft.getDistance(), simEncoderRight.getDistance());
+    driveOdometry.update(Rotation2d.fromDegrees(getHeading()), simEncoderLeft.getDistance(), simEncoderRight.getDistance());
   }
 
   public DifferentialDriveOdometry getOdometry() {
@@ -205,14 +220,15 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
-    return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
+    //return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
+    return new DifferentialDriveWheelSpeeds(simEncoderLeft.getRate(), simEncoderRight.getRate());
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
-    //frontLeft.setVoltage(leftVolts);
-    //frontRight.setVoltage(rightVolts);
-    frontLeft.setVoltage(5);
-    frontRight.setVoltage(7);
+    frontLeft.setVoltage(leftVolts);
+    frontRight.setVoltage(rightVolts);
+    //frontLeft.setVoltage(5);
+    //frontRight.setVoltage(7);
   }
 
   public DifferentialDriveKinematics getKinematics() {
@@ -225,8 +241,11 @@ public class Drivetrain extends SubsystemBase {
 
     // set the imputs of the sim
     driveSim.setInputs(
-      /*frontLeft.get() **/ frontLeft.getBusVoltage(),
-      /*frontRight.get() **/ frontRight.getBusVoltage());
+      //frontLeft.get() * frontLeft.getBusVoltage(),
+      //frontRight.get() * frontRight.getBusVoltage());
+      frontLeft.get() * RobotController.getInputVoltage(),
+      frontRight.get() * RobotController.getInputVoltage());
+
 
     // rate of updating the sim (s)
     driveSim.update(0.02);
@@ -235,9 +254,9 @@ public class Drivetrain extends SubsystemBase {
     leftEncoderSim.setDistance(driveSim.getLeftPositionMeters());
     leftEncoderSim.setRate(driveSim.getLeftVelocityMetersPerSecond());
     rightEncoderSim.setDistance(driveSim.getRightPositionMeters());
-    rightEncoderSim.setDistance(driveSim.getRightVelocityMetersPerSecond());
+    rightEncoderSim.setRate(driveSim.getRightVelocityMetersPerSecond());
     int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
     SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
-    angle.set(nav.getAngle());
+    angle.set(Math.IEEEremainder(-driveSim.getHeading().getDegrees(), 360));
   }
 }
