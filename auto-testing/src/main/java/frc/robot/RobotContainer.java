@@ -79,6 +79,7 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return autoSelector.test;
+    //return autoSelector.test;
+    return autoChooser.getSelected();
   }
 }
