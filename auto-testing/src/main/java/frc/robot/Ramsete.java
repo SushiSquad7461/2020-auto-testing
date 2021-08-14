@@ -34,7 +34,8 @@ public class Ramsete {
     // path enums
     public enum Paths {
         FORWARD("output/forward.wpilib.json"),
-        CIRCLE("output/circle.wpilib.json");
+        CIRCLE("output/circle.wpilib.json"),
+        CURVE("output/curve.wpilib.json");
         private String json;
         Paths(String json) {
             this.json = json;

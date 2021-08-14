@@ -35,9 +35,11 @@ import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Ramsete;
 
 public class Drivetrain extends SubsystemBase {
   //private CANSparkMax frontLeft, frontRight, backLeft, backRight;
@@ -81,7 +83,7 @@ public class Drivetrain extends SubsystemBase {
     // create the differential drive
     diffDrive = new DifferentialDrive(frontLeft, frontRight);
     driveKinematics = new DifferentialDriveKinematics(Constants.kDrivetrain.trackWidth);
-    driveOdometry = new DifferentialDriveOdometry(getAngle(), new Pose2d(1, 5, getAngle()));
+    driveOdometry = new DifferentialDriveOdometry(getAngle());
 
     // create feedforward and pid controllers
     leftFeedForward = new SimpleMotorFeedforward(
@@ -204,6 +206,10 @@ public class Drivetrain extends SubsystemBase {
   public void resetOdometry() {
     driveOdometry.resetPosition(getPose(), getAngle());
     //resetEncoders();
+  }
+
+  public void setOdometry(Trajectory traj) {
+    driveOdometry.resetPosition(traj.getInitialPose(), getAngle());
   }
 
   public void updateOdometry() {
