@@ -52,6 +52,8 @@ public class Drivetrain extends SubsystemBase {
   private PIDController leftController, rightController;
   private CANEncoder leftEncoder, rightEncoder;
 
+  private Field2d fieldSim;
+
 
   /* sim
   private Encoder simEncoderLeft;
@@ -114,6 +116,12 @@ public class Drivetrain extends SubsystemBase {
 		frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
     backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+    
+    // create a field view
+    fieldSim = new Field2d();
+    SmartDashboard.putData("Field", fieldSim);
+    fieldSim.getObject("forward traj").setTrajectory(Ramsete.Paths.FORWARD.getTrajectory());
+    fieldSim.getObject("curve traj").setTrajectory(Ramsete.Paths.CURVE.getTrajectory());
 
     // simulation variables and objects
     /*
@@ -145,6 +153,7 @@ public class Drivetrain extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     updateOdometry();
+    fieldSim.setRobotPose(getPose());
   }
 
   public void closedCurveDrive(double linearVelocity, double angularVelocity, boolean isQuickTurn) {

@@ -54,15 +54,9 @@ public class RobotContainer {
     // Configure the button bindings
     configureButtonBindings();
     
-    fieldSim = new Field2d();
-    SmartDashboard.putData("Field", fieldSim);
-    fieldSim.getObject("forward traj").setTrajectory(Ramsete.Paths.FORWARD.getTrajectory());
-    fieldSim.getObject("curve traj").setTrajectory(Ramsete.Paths.CURVE.getTrajectory());
+    
   }
 
-  public void updateField() {
-    fieldSim.setRobotPose(s_drive.getPose());
-  }
 
   /**
    * Use this method to define your button->command mappings. Buttons can be created by
