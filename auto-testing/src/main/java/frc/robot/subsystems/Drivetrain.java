@@ -20,8 +20,11 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import frc.robot.Constants;
+import frc.robot.Ramsete;
 
 public class Drivetrain extends SubsystemBase {
   private CANSparkMax frontLeft, frontRight, backLeft, backRight;
@@ -32,6 +35,8 @@ public class Drivetrain extends SubsystemBase {
   private SimpleMotorFeedforward leftFeedForward, rightFeedForward;
   private PIDController leftController, rightController;
   private CANEncoder leftEncoder, rightEncoder;
+
+  private Field2d field;
 
   public Drivetrain() {
     
@@ -81,11 +86,18 @@ public class Drivetrain extends SubsystemBase {
 		frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
     backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
+
+    // put field on dashboard
+    field = new Field2d();
+    SmartDashboard.putData("field", field);
+    field.getObject("forward traj").setTrajectory(Ramsete.Paths.FORWARD.getTrajectory());
+    field.getObject("curve traj").setTrajectory(Ramsete.Paths.CURVE.getTrajectory());
   }
 
   @Override
   public void periodic() {
     updateOdometry();
+    fieldSim.setRobotPose(s_drive.getPose());
   }
 
   public void closedCurveDrive(double linearVelocity, double angularVelocity, boolean isQuickTurn) {
