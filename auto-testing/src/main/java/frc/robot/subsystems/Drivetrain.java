@@ -5,20 +5,11 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpiutil.math.VecBuilder;
 
 import com.revrobotics.CANEncoder;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.hal.SimDevice;
-import edu.wpi.first.hal.SimDouble;
-import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PWMSparkMax;
-import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
@@ -29,21 +20,11 @@ import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.simulation.SimDeviceSim;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Ramsete;
 
 public class Drivetrain extends SubsystemBase {
   private CANSparkMax frontLeft, frontRight, backLeft, backRight;
-  private DifferentialDrive diffDrive;
   private boolean driveInverted;
   private DifferentialDriveKinematics driveKinematics;
   private DifferentialDriveOdometry driveOdometry;
@@ -52,18 +33,8 @@ public class Drivetrain extends SubsystemBase {
   private PIDController leftController, rightController;
   private CANEncoder leftEncoder, rightEncoder;
 
-
-  /* sim
-  private Encoder simEncoderLeft;
-  private Encoder simEncoderRight;
-  public DifferentialDrivetrainSim driveSim;
-  private EncoderSim leftEncoderSim;
-  private EncoderSim rightEncoderSim;
-  private SimDevice gyroSim; */
-
-  
-  /** Creates a new drivetrain. */
   public Drivetrain() {
+    
     // motor instantiation
     frontLeft = new CANSparkMax(Constants.kDrivetrain.fL_ID, Constants.kDrivetrain.MOTOR_TYPE);
     frontRight = new CANSparkMax(Constants.kDrivetrain.fR_ID, Constants.kDrivetrain.MOTOR_TYPE);
@@ -78,8 +49,7 @@ public class Drivetrain extends SubsystemBase {
     leftEncoder = frontLeft.getEncoder();
     rightEncoder = frontRight.getEncoder();
     
-    // create the differential drive
-    diffDrive = new DifferentialDrive(frontLeft, frontRight);
+    // create odometry
     driveKinematics = new DifferentialDriveKinematics(Constants.kDrivetrain.trackWidth);
     driveOdometry = new DifferentialDriveOdometry(getAngle());
 
@@ -100,50 +70,21 @@ public class Drivetrain extends SubsystemBase {
       Constants.kDrivetrain.RIGHT_kI, 
       Constants.kDrivetrain.RIGHT_kD);
 
-    // configure motor controllers
-		backLeft.follow(frontLeft);
-		backRight.follow(frontRight);
-
 		// open loop inversion configuration
 		frontLeft.setInverted(driveInverted);
 		frontRight.setInverted(driveInverted);
-		//backLeft.setInverted(driveInverted);
-		//backRight.setInverted(driveInverted);
+		backLeft.follow(frontLeft, driveInverted);
+		backRight.follow(frontRight, driveInverted);
 
+    // more motor config
 		frontLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		frontRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
 		backLeft.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
     backRight.setSmartCurrentLimit(Constants.kDrivetrain.CURRENT_LIMIT);
-
-    // simulation variables and objects
-    /*
-    simEncoderLeft = new Encoder(0, 1);
-    simEncoderRight = new Encoder(3,4);
-
-    simEncoderLeft.setDistancePerPulse(Math.PI/7);
-    simEncoderRight.setDistancePerPulse(Math.PI/7);
-    
-    resetOdometry();
-    
-    // instantiate simulation objects
-    driveSim = new DifferentialDrivetrainSim(
-      DCMotor.getNEO(2),
-      7.29,                      // gear reduction
-      7,                         // moment of inertia of robot
-      100,                       // weight of robot (kg)
-      Units.inchesToMeters(3),   // radius of wheels
-      0.59,                      // track width (m)
-      null                       // standard deviations of encoders
-    );
-    leftEncoderSim = new EncoderSim(simEncoderLeft);
-    rightEncoderSim = new EncoderSim(simEncoderRight);
-    gyroSim = new SimDevice(SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]")); */
   }
-
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
     updateOdometry();
   }
 
@@ -167,13 +108,9 @@ public class Drivetrain extends SubsystemBase {
 
     leftOutput = leftController.calculate(leftEncoder.getVelocity(), wheelSpeeds.leftMetersPerSecond);
     rightOutput = rightController.calculate(rightEncoder.getVelocity(), wheelSpeeds.rightMetersPerSecond);
-    //leftOutput = leftController.calculate(simEncoderLeft.getRate(), wheelSpeeds.leftMetersPerSecond);
-    //rightOutput = rightController.calculate(simEncoderRight.getRate(), wheelSpeeds.rightMetersPerSecond);
 
     frontLeft.setVoltage(leftOutput + leftFeedForwardOutput);
     frontRight.setVoltage(rightOutput + rightFeedForwardOutput);
-    //frontLeft.setVoltage(5);
-    //frontRight.setVoltage(6);
   }
 
   public Rotation2d getAngle() {
@@ -193,13 +130,13 @@ public class Drivetrain extends SubsystemBase {
   }
 
   public void resetEncoders() {
-    /* simEncoderRight.reset();
-    simEncoderLeft.reset(); */
+    leftEncoder.setPosition(0);
+    rightEncoder.setPosition(0);
   }
 
   public void resetOdometry() {
     driveOdometry.resetPosition(getPose(), getAngle());
-    //resetEncoders();
+    resetEncoders();
   }
 
   public void setOdometry(Trajectory traj) {
@@ -208,7 +145,6 @@ public class Drivetrain extends SubsystemBase {
 
   public void updateOdometry() {
     driveOdometry.update(getAngle(), leftEncoder.getPosition(), rightEncoder.getPosition());
-    //driveOdometry.update(Rotation2d.fromDegrees(getHeading()), simEncoderLeft.getDistance(), simEncoderRight.getDistance());
   }
 
   public DifferentialDriveOdometry getOdometry() {
@@ -221,14 +157,11 @@ public class Drivetrain extends SubsystemBase {
 
   public DifferentialDriveWheelSpeeds getWheelSpeeds() {
     return new DifferentialDriveWheelSpeeds(leftEncoder.getVelocity(), rightEncoder.getVelocity());
-    //return new DifferentialDriveWheelSpeeds(simEncoderLeft.getRate(), simEncoderRight.getRate());
   }
 
   public void tankDriveVolts(double leftVolts, double rightVolts) {
     frontLeft.setVoltage(leftVolts);
     frontRight.setVoltage(rightVolts);
-    //frontLeft.setVoltage(5);
-    //frontRight.setVoltage(7);
   }
 
   public DifferentialDriveKinematics getKinematics() {
@@ -237,28 +170,6 @@ public class Drivetrain extends SubsystemBase {
 
   @Override
   public void simulationPeriodic() {
-    // This method will be called once per scheduler run during simulation
-
-    /*
-
-    // set the imputs of the sim
-    driveSim.setInputs(
-      //frontLeft.get() * frontLeft.getBusVoltage(),
-      //frontRight.get() * frontRight.getBusVoltage());
-      frontLeft.get() * RobotController.getInputVoltage(),
-      frontRight.get() * RobotController.getInputVoltage());
-
-
-    // rate of updating the sim (s)
-    driveSim.update(0.02);
-
-    // update sensors
-    leftEncoderSim.setDistance(driveSim.getLeftPositionMeters());
-    leftEncoderSim.setRate(driveSim.getLeftVelocityMetersPerSecond());
-    rightEncoderSim.setDistance(driveSim.getRightPositionMeters());
-    rightEncoderSim.setRate(driveSim.getRightVelocityMetersPerSecond());
-    int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
-    SimDouble angle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
-    angle.set(Math.IEEEremainder(-driveSim.getHeading().getDegrees(), 360)); */
+    
   }
 }
