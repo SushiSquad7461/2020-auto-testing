@@ -125,6 +125,10 @@ public class Drivetrain extends SubsystemBase {
     frontRight.setVoltage(rightOutput + rightFeedForwardOutput);
   }
 
+  public void putTrajetoryOnField(Trajectory traj) {
+    field.getObject("auto first traj").setTrajectory(traj);
+  }
+
   public Rotation2d getAngle() {
     return Rotation2d.fromDegrees(nav.getAngle());
   }

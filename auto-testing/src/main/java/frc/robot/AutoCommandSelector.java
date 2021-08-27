@@ -75,6 +75,7 @@ public class AutoCommandSelector {
     public void setInitialDrivePose(SequentialCommandGroup auto) {
         if(firstTrajectoryMap.containsKey(auto)) {
             drive.setOdometry(firstTrajectoryMap.get(auto));
+            drive.putTrajetoryOnField(firstTrajectoryMap.get(auto));
         }  
     }
 }
