@@ -45,6 +45,9 @@ public class RobotContainer {
     autoChooser.setDefaultOption("test", autoSelector.test);
     autoChooser.addOption("forward", autoSelector.forward);
     autoChooser.addOption("circle", autoSelector.circle);
+    autoChooser.addOption("b8, 2m, 3t, goal start", autoSelector.b8_m2_t3_startG);
+    autoChooser.addOption("b8, 2m, 3t, center start", autoSelector.b8_m2_t3_startC);
+    autoChooser.addOption("b8, 2m, 3t, depot start", autoSelector.b8_m2_t3_startD);
     
     autoSelector.setInitialDrivePose(autoChooser.getSelected());;
 

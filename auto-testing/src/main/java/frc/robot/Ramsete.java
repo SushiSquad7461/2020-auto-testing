@@ -35,7 +35,13 @@ public class Ramsete {
     public enum Paths {
         FORWARD("output/forward.wpilib.json"),
         CIRCLE("output/circle.wpilib.json"),
-        CURVE("output/curve.wpilib.json");
+        CURVE("output/curve.wpilib.json"),
+        GOAL_INIT_TO_MID("output/goal init to mid.wpilib.json"),
+        CENTER_INIT_TO_MID("output/center init to mid.wpilib.json"),
+        DEPOT_INIT_TO_MID("output/depot init to mid.wpilib.json"),
+        MID_TO_SCORING("output/mid to scoring.wpilib.json"),
+        SCORING_TO_TRENCH("output/scoring to trench.wpilib.json"),
+        TRENCH_TO_SCORING("output/trench to scoring.wpilib.json");
         private String json;
         Paths(String json) {
             this.json = json;

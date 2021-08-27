@@ -97,7 +97,7 @@ public class Drivetrain extends SubsystemBase {
   @Override
   public void periodic() {
     updateOdometry();
-    fieldSim.setRobotPose(s_drive.getPose());
+    field.setRobotPose(getPose());
   }
 
   public void closedCurveDrive(double linearVelocity, double angularVelocity, boolean isQuickTurn) {
