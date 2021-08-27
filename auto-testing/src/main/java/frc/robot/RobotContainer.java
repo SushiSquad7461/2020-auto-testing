@@ -32,7 +32,6 @@ public class RobotContainer {
   private final Drivetrain s_drive;
   private final Ramsete ramsete;
   private final AutoCommandSelector autoSelector;
-  private Field2d fieldSim;
 
   private SendableChooser<SequentialCommandGroup> autoChooser = new SendableChooser<>();
 
@@ -53,8 +52,6 @@ public class RobotContainer {
 
     // Configure the button bindings
     configureButtonBindings();
-    
-    
   }
 
 
