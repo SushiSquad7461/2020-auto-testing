@@ -33,6 +33,9 @@ public class RobotContainer {
   private final Ramsete ramsete;
   private final AutoCommandSelector autoSelector;
 
+  // controllers
+  XboxController driveController;
+
   private SendableChooser<SequentialCommandGroup> autoChooser = new SendableChooser<>();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
@@ -40,6 +43,8 @@ public class RobotContainer {
     s_drive = new Drivetrain();
     ramsete = new Ramsete(s_drive);
     autoSelector = new AutoCommandSelector(s_drive, ramsete);
+
+    driveController = new XboxController(Constants.OI.DRIVE_CONTROLLER_ID);
     
     autoChooser = new SendableChooser<>();
     autoChooser.setDefaultOption("test", autoSelector.test);
@@ -52,6 +57,12 @@ public class RobotContainer {
     autoSelector.setInitialDrivePose(autoChooser.getSelected());;
 
     SmartDashboard.putString("pose", s_drive.getPose().toString());
+
+    s_drive.setDefaultCommand(new RunCommand(() -> s_drive.closedCurveDrive(
+      OI.getTriggers(driveController),
+      OI.getLeftJoystickAxis(driveController),
+      driveController.getXButtonPressed()),
+      s_drive));
 
     // Configure the button bindings
     configureButtonBindings();

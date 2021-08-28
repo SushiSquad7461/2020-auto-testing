@@ -77,4 +77,8 @@ public final class Constants {
         public static final double MAX_ACCEL_METERS_PER_SECOND_SQUARED = 420.6969;
         public static final double MAX_VOLTAGE = 40;
     }
+
+    public static final class OI {
+        public static final int DRIVE_CONTROLLER_ID = 0;
+    }
 }
